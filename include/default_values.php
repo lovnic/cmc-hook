@@ -10,6 +10,7 @@ if(!defined('ABSPATH')) {
 }
 
 $GLOBALS['cmchk_settings_default'] = array(
+	'version'=>CMCHK_VERSION,
     'run_hook_on' => 'both',
     'enable_codemirror'=>1,
 	'codemirror_theme'=>'',

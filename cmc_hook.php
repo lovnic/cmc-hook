@@ -2,7 +2,7 @@
 /*
 Plugin Name: cmc-hook
 Description: Register php functions to hooks(action and filter), run php codes safely, create and quickly test plugins all from dashboad tools
-Version: 1.0.4
+Version: 1.0.5
 Author: Evans Edem Ladzagla
 Author URI: https://profiles.wordpress.org/lovnic/
 License:     GPL3
@@ -176,7 +176,7 @@ final class cmc_hook{
         }
 		
         $sql = "SELECT h.*, p.active pactive FROM `".CMCHK_TABLE_PROJECT. 
-        "` p inner join `".CMCHK_TABLE_HOOK."` h on p.file_run = h.id where p.active != 0";
+        "` p inner join `".CMCHK_TABLE_HOOK."` h on p.file_run = h.id where p.active != 0 and project_id = -1 ";
         $projs = $wpdb->get_results( $sql, 'ARRAY_A' );
 		$projs  = apply_filters('cmchk_load_project', $projs );
         if( is_array( $projs ) ){ 
@@ -265,7 +265,7 @@ final class cmc_hook{
         $model = apply_filters('cmchk_shortcode', $model, $attr );
 		if( $model === false )return;
         if( empty($model) ){
-            eval('?>'.$model['code']);
+			self::run_php( $model['code'] );
         }		
     }
 
@@ -411,7 +411,7 @@ final class cmc_hook{
 	*	@param int $hook_id	selected hook id
 	*/
 	private static function proj_exp_projects( $proj_id, $hook_id ){
-		global $wpdb; $sql = "SELECT * FROM `".CMCHK_TABLE_PROJECT."` where status != 'trash' ";				
+		global $wpdb; $sql = "SELECT * FROM `".CMCHK_TABLE_PROJECT."` where status != 'trash' and project_id = -1 ";				
 		$result = $wpdb->get_results( $sql, 'ARRAY_A' );				
 		if( $result !== false ){
 			$ul = "<ul class='jqueryFileTree' style='display: none;'>";
@@ -703,7 +703,7 @@ final class cmc_hook{
         $data['id'] = isset( $model['id'] )? $model['id'] : 0;
         $data['title'] = sanitize_text_field( wp_unslash( $model['title'] ) );		
         if( $data['id'] == 0){
-			$data['project_id'] = !empty($model['cmchk_proj'])? $model['cmchk_proj'] : 0;	
+			$data['project_id'] = !empty($model['cmchk_proj'])? $model['cmchk_proj'] : -1;	
 			$data['slug'] = self::get_slug( CMCHK_TABLE_PROJECT, $data['id'], $data['title'], $data['project_id'] ) ;
         }		
         $data['description'] = isset($model['description'])? wp_unslash( $model['description'] ): "";
@@ -831,7 +831,7 @@ final class cmc_hook{
         }
 		global $wpdb; $ids = array();
 		if( $proj_id == 'all'){
-			$ids = $wpdb->get_col("SELECT id FROM ".CMCHK_TABLE_PROJECT); array_unshift($ids, 0);
+			$ids = $wpdb->get_col("SELECT id FROM ".CMCHK_TABLE_PROJECT." where project_id = -1 "); array_unshift($ids, 0);
 		}else if( is_numeric($proj_id) ){
 			$ids = array($proj_id);
 		}else if( is_array($proj_id) ){
@@ -867,9 +867,9 @@ final class cmc_hook{
 		return $projs;
 	}
 	
-	 /**
+	/**
      *  Export hooks
-     */
+    **/
 	public static function export_hook(){
 		global $wpdb; $ids = esc_sql( $_POST['bulk-items'] ); $id = implode(', ', $ids); $proj = array('id'=> 0);
 		$projs = array(); 
@@ -897,9 +897,9 @@ final class cmc_hook{
 			die( 'Cheating...' );
         }
 		if( empty($_FILES['cmchk_file_import']) )return;
-		$projs = file_get_contents($_FILES['cmchk_file_import']['tmp_name']);
-		$meta = $projs['meta']; unset($projs['meta']);
+		$projs = file_get_contents($_FILES['cmchk_file_import']['tmp_name']);		
 		$projs = json_decode($projs, true);
+		$meta = $projs['meta']; unset($projs['meta']);
 		$response = self::_import( $projs, $meta );
 		
 		wp_redirect( self::current_url() );
@@ -1108,11 +1108,46 @@ final class cmc_hook{
         return isset($opt[$name])? $opt[$name]: $default;
     }
 	
+	/**
+     *  Get value of one Hook Settings
+     *	@since 1.0.5 
+	 *
+     * @param string $name name of the settings
+     * @param string $default default value if name doesnt exist
+     */
+	public static function legacy(){
+		global $wpdb;
+		$setting = get_option( CMCHK_SETTINGS );		
+		if( is_array($setting) && empty($setting['version']) ){ 
+			$table = $wpdb->get_var("SHOW TABLES LIKE '".CMCHK_TABLE_PROJECT."'"); ;
+			if( $table == CMCHK_TABLE_PROJECT ){ // less than 1.0.5
+				$data = array('project_id' => '-1');
+				$result = $wpdb->update( CMCHK_TABLE_PROJECT, $data, array('project_id'=> '0') );
+				
+				$result = $wpdb->get_row("SELECT * FROM ".CMCHK_TABLE_PROJECT);
+				if(!isset($result->folder_id)){
+					$wpdb->query("ALTER TABLE ".CMCHK_TABLE_PROJECT." ADD `folder_id` INT(10) NOT NULL DEFAULT -1");
+				}
+				
+				$result = $wpdb->get_row("SELECT * FROM ".CMCHK_TABLE_HOOK);
+				if(!isset($result->folder_id)){
+					$wpdb->query("ALTER TABLE ".CMCHK_TABLE_HOOK." ADD `folder_id` INT(10) NOT NULL DEFAULT -1");
+				}			
+				$setting['version'] = CMCHK_VERSION;
+				update_option( CMCHK_SETTINGS, $setting );
+			}else{
+				return;
+			}
+		}
+		
+	}
+	
     /**
      *  Activation function runs on plugin activation
      */
     public static function plugin_activate(){
-        global $wpdb;
+        self::legacy();
+		global $wpdb;		
         require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
         
         $sql = 'CREATE TABLE IF NOT EXISTS `'.CMCHK_TABLE_HOOK.'` (
@@ -1129,7 +1164,7 @@ final class cmc_hook{
             `active` tinyint(1) NULL DEFAULT 0,
             `enable_shortcode` tinyint(1) NOT NULL DEFAULT 0,
             `status` VARCHAR(20) NOT NULL,
-			`folder_id` INT(10) NOT NULL DEFAULT 0,
+			`folder_id` INT(10) NOT NULL DEFAULT -1,
             `datetimecreated` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             `datetimeupdated` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, 
              PRIMARY KEY (`id`)
@@ -1139,7 +1174,7 @@ final class cmc_hook{
 		
         $sql = 'CREATE TABLE IF NOT EXISTS `'.CMCHK_TABLE_PROJECT.'` (			
             `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-            `project_id` INT(10) NOT NULL DEFAULT 0,
+            `project_id` INT(10) NOT NULL DEFAULT -1,
             `title` varchar(200) NOT NULL,
             `slug` varchar(200) NOT NULL,
             `description` varchar(1000),
@@ -1148,6 +1183,7 @@ final class cmc_hook{
             `enable_shortcode` tinyint(1) NOT NULL DEFAULT 0,
             `file_run` INT(10) NOT NULL DEFAULT 0,
             `status` VARCHAR(20) NOT NULL,
+			`folder_id` INT(10) NOT NULL DEFAULT -1,
             `datetimecreated` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             `datetimeupdated` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, 
              PRIMARY KEY (`id`)
@@ -1155,11 +1191,11 @@ final class cmc_hook{
 
         dbDelta( $sql );    
 		
-		if( !get_option('cmc_hook_settings') ){
+		if( !get_option( CMCHK_SETTINGS ) ){
 			global $cmchk_settings_default;
-			update_option('cmc_hook_settings', $cmchk_settings_default);
+			update_option(CMCHK_SETTINGS, $cmchk_settings_default);
 		}
-			
+
     }
     
     /**
@@ -1208,24 +1244,9 @@ final class cmc_hook{
 		require( $file );
 	}
 	
-    /**
-    * Cloning is forbidden.
-    */
-    public function __clone() {
-		doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'cmchk' ), '2.1' );
-    }
-
-    /**
-    * Unserializing instances of this class is forbidden.\
-    */
-    public function __wakeup() {
-		doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'cmchk' ), '2.1' );
-    }
-
 	/**
 	* Check whether a string starts with another string
-	*/
-	
+	*/	
 	function startsWith($needle, $haystack) {
 		return preg_match('/^' . preg_quote($needle, '/') . '/', $haystack);
 	}
@@ -1241,7 +1262,7 @@ final class cmc_hook{
      * Include required core files used in admin and on the frontend.
      */
     public static function includes(){
-        require_once("include/default.php");
+        require_once("include/default_values.php");
 		require_once("include/functions.php");
     }
 	
@@ -1250,7 +1271,7 @@ final class cmc_hook{
      */
     public static function constants(){
         global $wpdb;
-        define('CMCHK_VERSION', '1.0.4');
+        define('CMCHK_VERSION', '1.0.5');
         define('CMCHK_FOLDER', basename( dirname( __FILE__ ) ) );
         define('CMCHK_DIR', plugin_dir_path( __FILE__ ) );
 		define('CMCHK_DIR_INCLUDE', CMCHK_DIR . 'include/' );
@@ -1265,6 +1286,19 @@ final class cmc_hook{
 		define('CMCHK_DIR_PROJECT', CMCHK_DIR.'projects/');
     }
     
+	/**
+    * Cloning is forbidden.
+    */
+    public function __clone() {
+		doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'cmchk' ), '2.1' );
+    }
+
+    /**
+    * Unserializing instances of this class is forbidden.\
+    */
+    public function __wakeup() {
+		doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'cmchk' ), '2.1' );
+    }
 }
 /**
  * Main instance of cmc_hook.

@@ -82,6 +82,9 @@ $sel_tab = empty($_REQUEST['tab']) ? 'hook': $_REQUEST['tab'];
         <button id="cmchk-project-add-form-btn" class="page-title-action cmchk-help-tip" type="button"  onclick="jQuery('#cmchk-project-add-form').slideToggle('fast').find(':text').focus();">
             <?php echo __('Add Project', 'cmchk');  ?>
         </button>
+		<button class="page-title-action cmchk-help-tip" onclick="jQuery('#cmchk-folder-add-form').slideToggle('fast').find(':text').focus();" >
+			<?php echo __('Add Folder', 'cmchk');  ?>
+		</button>
         <button type="button" id="cmchk-form-project-impport-btn" class="page-title-action cmchk-help-tip" data-tip="Import Projects" onclick="jQuery('form#cmchk-form-project-import').slideToggle('fast').find(':file').focus();" >                
             <?php echo __('Import', 'cmchk'); ?>
         </button>  
@@ -90,8 +93,29 @@ $sel_tab = empty($_REQUEST['tab']) ? 'hook': $_REQUEST['tab'];
             <?php echo __('Export', 'cmchk'); ?>
         </a>  		
     </h1>
-    <div style="width:400px;">
-        <form id="cmchk-form-project-import" method="post" enctype="multipart/form-data" class="" style="display:none;" action="?page=cmc-hook&cmchk_page=project" >
+    <div style="width:400px;">        
+        <form id="cmchk-hook-add-form" class="cmchk-hook-project-folder-add-form" style="display:none;" action="<?php echo admin_url('admin-ajax.php').'?action=cmchk_hook_editor&tab='.$_REQUEST['tab']; ?>" >
+            <p>
+                <?php wp_nonce_field( 'cmc-hook-nonce','_wpnonce', true, true ); ?>
+                <input type="text" name="title" class="widefat" style="width:70%" placeholder="<?php echo __("Hook Title", "cmchk"); ?>" />
+                <button type="submit" class="button button-primary" style="width:15%;"><?php echo __('Save', 'cmchk'); ?></button>
+            </p>
+        </form>
+        <form id="cmchk-project-add-form" class="cmchk-hook-project-folder-add-form" style="display:none;" action="<?php echo admin_url('admin-ajax.php').'?action=cmchk_project_editor&tab='.$_REQUEST['tab']; ?>">
+            <p>
+                <?php wp_nonce_field( 'cmc-hook-project-nonce','_wpnonce', true, true ); ?>
+                <input type="text" name="title" class="widefat" style="width:70%" placeholder="<?php echo __("Project Title", "cmchk"); ?>" />
+                <button  type="submit" class="button button-primary" style="width:15%;" ><?php echo __('Save', 'cmchk'); ?></button>
+            </p>
+        </form>
+		<form id="cmchk-folder-add-form" class="cmchk-hook-project-folder-add-form" method="post" style="display:none;" action="<?php echo admin_url('admin-ajax.php').'?action=cmchk_hook_editor&tab='.$_REQUEST['tab']; ?>" >
+			<p>
+				<?php wp_nonce_field( 'cmchk-project-folder-add-nonce','_wpnonce', true, true ); ?>
+				<input type="text" name="title" class="widefat" style="width:70%" placeholder="<?php echo __("Folder Name", "cmchk"); ?>" />
+				<button  type="submit" class="button button-primary" style="width:15%;" name="cmchk_action" value="project-add-folder" ><?php echo __('Save', 'cmchk'); ?></button>
+			</p>
+		</form>
+		<form id="cmchk-form-project-import" method="post" enctype="multipart/form-data" class="" style="display:none;" action="?page=cmc-hook&cmchk_page=project" >
             <p>
                 <?php wp_nonce_field( 'cmc-hook-import-nonce','_wpnonce', true, true ); ?>
                 <input name="cmchk_action" type="hidden" value="import" />
@@ -100,23 +124,7 @@ $sel_tab = empty($_REQUEST['tab']) ? 'hook': $_REQUEST['tab'];
                 <button type="submit" class="button button-primary" style="width:15%;"><?php echo __('Import', 'cmchk'); ?></button>
             </p>
         </form>
-        <form id="cmchk-hook-add-form" class="cmchk-hook-project-add-form" style="display:none;" action="<?php echo admin_url('admin-ajax.php').'?action=cmchk_hook_editor&tab='.$_REQUEST['tab']; ?>" >
-            <p>
-                <?php wp_nonce_field( 'cmc-hook-nonce','_wpnonce', true, true ); ?>
-                <input name="XDEBUG_SESSION_START" type="hidden" />
-                <input type="text" name="title" class="widefat" style="width:70%" placeholder="<?php echo __("Hook Title", "cmchk"); ?>" />
-                <button type="submit" class="button button-primary" style="width:15%;"><?php echo __('Save', 'cmchk'); ?></button>
-            </p>
-        </form>
-        <form id="cmchk-project-add-form" class="cmchk-hook-project-add-form" style="display:none;" action="<?php echo admin_url('admin-ajax.php').'?action=cmchk_project_editor&tab='.$_REQUEST['tab']; ?>">
-            <p>
-                <?php wp_nonce_field( 'cmc-hook-project-nonce','_wpnonce', true, true ); ?>
-                <input name="XDEBUG_SESSION_START" type="hidden" /> 
-                <input type="text" name="title" class="widefat" style="width:70%" placeholder="<?php echo __("Project Title", "cmchk"); ?>" />
-                <button  type="submit" class="button button-primary" style="width:15%;" ><?php echo __('Save', 'cmchk'); ?></button>
-            </p>
-        </form>
-    </div>          
+	</div>          
     <h2 id="cmchk_tab_menu" class="nav-tab-wrapper wp-clearfix">        
         <?php             
             $menu = apply_filters('cmchk_admin_page_menu', $menu);
@@ -150,13 +158,15 @@ $sel_tab = empty($_REQUEST['tab']) ? 'hook': $_REQUEST['tab'];
 
     (function($, cmchk){
 		cmchk_page_load( $(document) );
-        $('.cmchk-hook-project-add-form :submit').click(function(){ 
+        $('.cmchk-hook-project-folder-add-form :submit').click(function(){ 
             var $btn = $(this), $form = $btn.closest('form'); 
             $btn.prop('disabled', true); var data = $form.serializeArray();
-            if( $form.is('#cmchk-hook-add-form')) data.push({name: 'project_id', value: $('#cmchk_project_id').val() || 0});
-            $.post($form.attr('action'), data, function(data){
-                if( data.url )document.location = data.url;
-                if(data.message) alert(data.message);                                
+			data.push({name: 'XDEBUG_SESSION_START', value: 'xdebug'});
+            if( $form.is('#cmchk-hook-add-form') ) data.push({name: 'project_id', value: $('#cmchk_project_id').val() || 0});
+			if( $form.is('#cmchk-folder-add-form') ) data.push({name: 'project_id', value: $('#cmchk_project_id').val() || 0});
+            $.post($form.attr('action'), data, function(result){
+				if(result.message) alert(result.message);
+                if( result.url )document.location = result.url;                                                
             }).always(function(){
                 $btn.prop('disabled', false);
             }).fail(function(){
