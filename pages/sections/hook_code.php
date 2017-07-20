@@ -48,7 +48,7 @@ $cmc_wp_funcs =  apply_filters( 'cmchk_admin_page_hook_editor_wp_funcs', $cmc_wp
 			data-cmchk-img-url="<?php echo CMCHK_URL_CSS.'codemirror/ui/images/silk'; ?>"
 			data-cmchk-nonce="<?php echo wp_create_nonce( 'cmchk-hook-code-save' ); ?>"
 			style="height:100%;" 
-		><?php echo $model['code']; ?></textarea>
+		><?php echo esc_html($model['code']); ?></textarea>
 		<div style="clear:both;"></div>
 	</div>
 	<p style="margin-top:35px;">

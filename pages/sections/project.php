@@ -26,10 +26,7 @@ else if( empty( $model ) ){
 
 <h3 style="margin-bottom: 5px;"> 
     <?php echo __('Project Hooks', 'cmchk'); ?>
-	<!--
-	<button class="page-title-action cmchk-help-tip" onclick="jQuery('#cmchk-project-folder-add-form').slideToggle('fast').find(':text').focus();" >Folder</button>
-	-->
-	<!--
+<!--
     <div style="float:right;margin-top:-5px;">
         <button href="javascript:void(0);" class="button button-secondary" onclick="javascript:introJs().start();" >Help</button>
         <button type="button" name="cmchk_action" value="project_editor" class="button button-primary cmchk_project_editor_form_submit" > <?php echo __('Submit', 'cmchk') ?></button>
@@ -37,14 +34,7 @@ else if( empty( $model ) ){
 	-->   
 </h3>
 <div style="width:400px;">
-	<form id="cmchk-project-folder-add-form" method="post" enctype="multipart/form-data" class="" style="display:none;" action="<?php echo admin_url('admin-ajax.php').'?action=cmchk_hook_editor&tab='.$_REQUEST['tab']; ?>" >
-		<p>
-			<?php wp_nonce_field( 'cmchk-project-folder-add-nonce','_wpnonce', true, true ); ?>
-			<input name="XDEBUG_SESSION_START" type="hidden" /> 
-			<input type="text" name="title" class="widefat" style="width:70%" placeholder="<?php echo __("Name", "cmchk"); ?>" />
-			<button  type="submit" class="button button-primary" style="width:15%;" name="cmchk_action" value="project-add-folder" ><?php echo __('Save', 'cmchk'); ?></button>
-		</p>
-	</form>
+	
 </div>
 <div id="poststuff">
     <div id="post-body" class="metabox-holder columns-2">
@@ -91,21 +81,7 @@ else if( empty( $model ) ){
 <script>
     (function($){
 		(function($, cmchk){
-			$('.cmchk-project-folder-add-form :submit').click(function(){ 
-				var $btn = $(this), $form = $btn.closest('form'); 
-				$btn.prop('disabled', true); var data = $form.serializeArray();
-				var proj_id = $('#cmchk_project_id').val() || 0;
-				if( $form.is('#cmchk-hook-add-form')) data.push({ name: 'project_id', value: proj_id });
-				$.post($form.attr('action'), data, function(result){
-					if( result.replace )document.location = result.replace;
-					if(result.message) alert(result.message);                                
-				}).always(function(){
-					$btn.prop('disabled', false);
-				}).fail(function(){
-					alert('Network Error: Unable To add Hook');
-				});
-				return false;
-			});
+			
 			
 		})(jQuery, cmchk);
         

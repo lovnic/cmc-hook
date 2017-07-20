@@ -31,15 +31,14 @@ class cmc_hook_project_List extends WP_List_Table {
 
         global $wpdb;
         $sql = "SELECT p.*, h.title hk_title FROM `".CMCHK_TABLE_PROJECT."` ".
-		"p left join `".CMCHK_TABLE_HOOK."` h on p.file_run = h.id where ";
+		"p left join `".CMCHK_TABLE_HOOK."` h on p.file_run = h.id where p.project_id = -1 and ";
         //$sql = "SELECT * FROM {$wpdb->prefix}cmc_hook_project";
 
         if( $_REQUEST['status'] == 'trash' ){
             $sql .= " p.status = 'trash' ";
         }else{
             $sql .= " p.status != 'trash' ";
-        }   
-                
+        }         
         if ( ! empty( $_REQUEST['orderby'] ) ) {
           $sql .= ' ORDER BY ' . esc_sql( $_REQUEST['orderby'] );
           $sql .= ! empty( $_REQUEST['order'] ) ? ' ' . esc_sql( $_REQUEST['order'] ) : ' ASC';
@@ -76,7 +75,7 @@ class cmc_hook_project_List extends WP_List_Table {
     public static function record_count(){
         global $wpdb;
 
-        $sql ="SELECT COUNT(*) FROM ".CMCHK_TABLE_PROJECT." where ";
+        $sql ="SELECT COUNT(*) FROM ".CMCHK_TABLE_PROJECT." where project_id = -1 and ";
         
         if( $_REQUEST['status'] == 'trash' ){
             $sql .= " status = 'trash' ";
@@ -90,7 +89,7 @@ class cmc_hook_project_List extends WP_List_Table {
     public function cmchk_get_counts(){
         global $wpdb; $count = array();
 
-        $sql = "SELECT COUNT(*) FROM ".CMCHK_TABLE_PROJECT." where ";
+        $sql = "SELECT COUNT(*) FROM ".CMCHK_TABLE_PROJECT." where project_id = -1 and ";
 
         $sqlall = $sql . " status != 'trash' ";
         $count['all'] = $wpdb->get_var($sqlall);
