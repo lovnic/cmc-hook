@@ -161,7 +161,7 @@ $sel_tab = empty($_REQUEST['tab']) ? 'hook': $_REQUEST['tab'];
         $('.cmchk-hook-project-folder-add-form :submit').click(function(){ 
             var $btn = $(this), $form = $btn.closest('form'); 
             $btn.prop('disabled', true); var data = $form.serializeArray();
-			data.push({name: 'XDEBUG_SESSION_START', value: 'xdebug');
+			data.push({name: 'XDEBUG_SESSION_START', value: 'xdebug'});
             if( $form.is('#cmchk-hook-add-form') ) data.push({name: 'project_id', value: $('#cmchk_project_id').val() || 0});
 			if( $form.is('#cmchk-folder-add-form') ) data.push({name: 'project_id', value: $('#cmchk_project_id').val() || 0});
             $.post($form.attr('action'), data, function(result){
