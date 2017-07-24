@@ -7,7 +7,7 @@ if(!defined('ABSPATH')) {
     header('HTTP/1.0 403 Forbidden');
     exit;
 }
-if(	!cmc_hook::is_user_allowed()){
+if(	!cmchk::is_user_allowed()){
 	exit('You do not have permission to view this page');
 }
 
@@ -52,7 +52,7 @@ $cmc_wp_funcs =  apply_filters( 'cmchk_admin_page_hook_editor_wp_funcs', $cmc_wp
 		<div style="clear:both;"></div>
 	</div>
 	<p style="margin-top:35px;">
-		<label data-step="4" data-intro="Select Hook Record to run">
+		<label>
 			<?php echo __('Php File', 'cmchk') ?>
 			<select id="cmc-hk-phpfile"  >
 				<?php
@@ -65,7 +65,7 @@ $cmc_wp_funcs =  apply_filters( 'cmchk_admin_page_hook_editor_wp_funcs', $cmc_wp
 				<span class="dashicons dashicons-download" style="margin-top:4px;" ></span>
 			</a>
 		</label>
-		<label data-step="5" data-intro="Select Wordpress Function">
+		<label>
 			<?php echo __('WP functions', 'cmchk') ?>
 			<select id="cmc-hk-wpfunc">
 				<?php
@@ -78,7 +78,7 @@ $cmc_wp_funcs =  apply_filters( 'cmchk_admin_page_hook_editor_wp_funcs', $cmc_wp
 				<span class="dashicons dashicons-download" style="margin-top:4px;"></span>
 			</a>
 		</label>
-		<a id="cmc-hk-media-insert" class="button button-primary" href="javascript:void(0);" data-step="6" data-intro="Add Media Files">
+		<a id="cmc-hk-media-insert" class="button button-primary" href="javascript:void(0);">
 			<i class="dashicons dashicons-admin-media" style="margin-top:4px;"></i>
 		</a>
 	</p>	

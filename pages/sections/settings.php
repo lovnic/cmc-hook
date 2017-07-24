@@ -8,7 +8,7 @@ if(!defined('ABSPATH')) {
     header('HTTP/1.0 403 Forbidden');
     exit;
 }
-if(	!cmc_hook::is_user_allowed()){
+if(	!cmchk::is_user_allowed()){
 	exit('You do not have permission to view this page');
 }
 

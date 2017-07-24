@@ -7,7 +7,7 @@ if(!defined('ABSPATH')) {
     header('HTTP/1.0 403 Forbidden');
     exit;
 }
-if(	!cmc_hook::is_user_allowed()){
+if(	!cmchk::is_user_allowed()){
 	exit('You do not have permission to view this page');
 }
 
@@ -59,7 +59,7 @@ $projid = $proj? $proj['id']: 0;
             <div id="post-body-content" style="position: relative">
 				<?php
 					if( !empty( $model ) ){
-						cmc_hook::include_file( CMCHK_DIR."pages/sections/hook_code.php", array('hook_id'=>$hook_id) );
+						cmchk::include_file( CMCHK_DIR."pages/sections/hook_code.php", array('hook_id'=>$hook_id) );
 					}									
 				?>
             </div>
@@ -84,14 +84,14 @@ $projid = $proj? $proj['id']: 0;
 							<div id="tabs-2" style="padding:5px;" >
 								<?php
 									if( !empty( $model ) ){
-										cmc_hook::include_file( CMCHK_DIR."pages/sections/hook_attributes.php", array('hook_id'=>$hook_id) );
+										cmchk::include_file( CMCHK_DIR."pages/sections/hook_attributes.php", array('hook_id'=>$hook_id) );
 									}									
 								?>
 							</div>
 							<div id="tabs-3" style="padding:5px;" >
 								<?php
 									if( $projid > 0){
-										cmc_hook::include_file( CMCHK_DIR."pages/sections/project_attributes.php", array('proj_id'=>$projid) );// require_once("project_attributes.php"); 
+										cmchk::include_file( CMCHK_DIR."pages/sections/project_attributes.php", array('proj_id'=>$projid) );// require_once("project_attributes.php"); 
 									}
 								?>
 							</div>

@@ -7,7 +7,7 @@ if(!defined('ABSPATH')) {
     header('HTTP/1.0 403 Forbidden');
     exit;
 }
-if(	!cmc_hook::is_user_allowed()){
+if(	!cmchk::is_user_allowed()){
 	exit('You do not have permission to view this page');
 }
 
@@ -30,7 +30,7 @@ $types = array('filter'=>'Filter', 'action'=>'Action', 'file'=>'Php file');
 $html_json = array('proj_id'=> $projid, 'hook_id'=>(int)$model['id'] );
 ?>
 <form id="cmchk-hookeditor-hook-attributes" data-cmchk='<?php echo json_encode($html_json); ?>' >
-	<p data-step="7" data-intro="Enter The Title">     
+	<p>     
 		<label>Title</label><br/>
 		<input type="text" name="title" class="widefat" value="<?php echo $model['title']; ?>" />
 		<?php wp_nonce_field( 'cmc-hook-nonce','_wpnonce', true, true ); ?>
@@ -46,7 +46,7 @@ $html_json = array('proj_id'=> $projid, 'hook_id'=>(int)$model['id'] );
 		<label><?php echo __("Hook ID") ?></label><br>
 		<input type="text" class="widefat" readonly="true" value="<?php echo $model['id']; ?>" />
 	</p>
-	<p data-step="8" data-intro="Select Type: Hook or php file">
+	<p>
 		<label><?php echo __('Type', 'cmchk') ?></label><br/>
 		<select id="cmc-hk-type" name="type" class="widefat" onchange="var r = /filter|action/.test(this.value); jQuery('#cmc-hk-hook-box').toggle( r );" >
 			<?php 
@@ -64,12 +64,12 @@ $html_json = array('proj_id'=> $projid, 'hook_id'=>(int)$model['id'] );
 	</p>
 	<?php } ?>
 	
-	<p data-step="9" data-intro="Describe the record">
+	<p>
 		<label><?php echo __('Description', 'cmchk') ?></label><br/>
 		<textarea name="description" row="3" class="widefat" style="vertical-align: top;" ><?php echo $model['description']; ?></textarea>
 	</p>
 
-	<p data-step="10" data-intro="Activation and Shortcode">
+	<p>
 		<label>
 			<?php echo __('Active', 'cmchk') ?>
 			<input type="radio" name="active" <?php checked( $model['active'], 1); ?> value="1" />
@@ -90,12 +90,12 @@ $html_json = array('proj_id'=> $projid, 'hook_id'=>(int)$model['id'] );
 		<?php } ?>							
 	</p>
 
-	<p data-step="11" data-intro="Run record in safe mode">
+	<p>
 		<?php global $wp; //$wp->request ?>
-		<a class="page-title-action" target="_blank" href="<?php echo add_query_arg( array(), cmc_hook::current_url()); ?>" >
+		<a class="page-title-action" target="_blank" href="<?php echo add_query_arg( array(), admin_url('tools.php?page=cmc-hook') ); ?>" >
 			<?php echo __('Run', 'cmchk') ?>
 		</a>
-		<a class="page-title-action" target="_blank" href="<?php echo add_query_arg(array('cmchk_safe'=>$model['id']),cmc_hook::current_url()); ?>" >
+		<a class="page-title-action" target="_blank" href="<?php echo add_query_arg(array('cmchk_safe'=>$model['id']), admin_url('tools.php?page=cmc-hook') ); ?>" >
 			<?php echo __('Run In Safe Mode', 'cmchk') ?>
 		</a>
 	</p>
@@ -183,7 +183,7 @@ $html_json = array('proj_id'=> $projid, 'hook_id'=>(int)$model['id'] );
 				.always(function(){});
 				return false
 			});
-			
+
 		})(jQuery);
 	</script>
 </form>

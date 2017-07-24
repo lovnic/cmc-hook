@@ -9,7 +9,7 @@ if(!defined('ABSPATH')) {
     header('HTTP/1.0 403 Forbidden');
     exit;
 }
-if(	!cmc_hook::is_user_allowed()){
+if(	!cmchk::is_user_allowed()){
 	exit('You do not have permission to view this page');
 }
 
@@ -38,7 +38,7 @@ $hooks = $wpdb->get_results( $sql, 'ARRAY_A' );
 			<input id="cmc-hook-table" name="cmc-hook-table" type="hidden" value="project" />
 		</p>
 			<?php if( !empty( $proj_id ) ){ ?>
-		 <p>
+		<p>
 			<label><?php echo __('Project ID', 'cmchk') ?></label><br/>
 			<input type="text" class="widefat" readonly="true" value="<?php echo $model['id']; ?>" />
 		</p>
@@ -79,10 +79,10 @@ $hooks = $wpdb->get_results( $sql, 'ARRAY_A' );
 		</p>
 		<p>
 			<?php global $wp; //$wp->request ?>
-			<a class="page-title-action" target="_blank" href="<?php echo add_query_arg(array(),cmc_hook::current_url()); ?>" data-step="8" data-intro="Run">
+			<a class="page-title-action" target="_blank" href="<?php echo add_query_arg(array(),cmchk::current_url()); ?>" data-step="8" data-intro="Run">
 				<?php echo __('Run', 'cmchk') ?>
 			</a> 
-			<a class="page-title-action" target="_blank" href="<?php echo add_query_arg(array('cmchk_safe_proj'=>$model['id']),cmc_hook::current_url()); ?>" data-step="8" data-intro="Run record in safe mode">
+			<a class="page-title-action" target="_blank" href="<?php echo add_query_arg(array('cmchk_safe_proj'=>$model['id']),cmchk::current_url()); ?>" data-step="8" data-intro="Run record in safe mode">
 				<?php echo __('Run In Safe Mode', 'cmchk') ?>
 			</a> 
 		</p>
@@ -119,7 +119,7 @@ $hooks = $wpdb->get_results( $sql, 'ARRAY_A' );
 		</p>                        
 		<?php 
 		if( !empty( $proj_id ) ){
-			cmc_hook::include_file( CMCHK_DIR."pages/sections/plugin_form.php", array('proj_id'=>$proj_id) );
+			cmchk::include_file( CMCHK_DIR."pages/sections/plugin_form.php", array('proj_id'=>$proj_id) );
 		}
 		?>
 	</div> 
