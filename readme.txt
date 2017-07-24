@@ -2,8 +2,8 @@
 Contributors: lovnic
 Tags: php, javascript, css, shortcode generator, custom filters, custom hooks, custom actions, plugin creator, safe php, live php developer, Wordpress IDE
 Requires at least: 4.6.0
-Tested up to: 4.7
-Stable tag: 1.0.3
+Tested up to: 4.8
+Stable tag: 1.0.6
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 

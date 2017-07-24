@@ -9,7 +9,7 @@ if(!defined('ABSPATH')) {
     header('HTTP/1.0 403 Forbidden');
     exit;
 }
-if(	!cmc_hook::is_user_allowed()){
+if(	!cmchk::is_user_allowed()){
 	exit('You do not have permission to view this page');
 }
 
@@ -61,7 +61,7 @@ else if( empty( $model ) ){
                 </h2>
                 <div class="inside"> 
 					<?php
-						cmc_hook::include_file( CMCHK_DIR."pages/sections/project_attributes.php", array('proj_id'=>$proj_id) );
+						cmchk::include_file( CMCHK_DIR."pages/sections/project_attributes.php", array('proj_id'=>$proj_id) );
 					?>                
                 </div>
             </div> 
@@ -80,10 +80,6 @@ else if( empty( $model ) ){
 -->
 <script>
     (function($){
-		(function($, cmchk){
-			
-			
-		})(jQuery, cmchk);
         
         $('#cmchk-form-project-hook-submit').click(function(){
             var $btn = $(this), $div = $('#cmchk-form-project-hook'), $nonce = $div.find('[name=_wpnonce]');

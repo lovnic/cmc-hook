@@ -8,66 +8,44 @@ if(!defined('ABSPATH')) {
     header('HTTP/1.0 403 Forbidden');
     exit;
 }
-if(	!cmc_hook::is_user_allowed()){
+if(	!cmchk::is_user_allowed()){
 	exit('You do not have permission to view this page');
 }
 
-$menu = array(
-    'hook'=>array('text'=>__('Hooks', 'cmchk'), 'href'=>'?page=cmc-hook', 'page'=>function(){    
-        $sections = array(
-            'hooks'=>array('page'=>function(){ 
-				cmc_hook::$hooks->cmc_admin_view();
-            }),    
-        ); 
-        $sections = apply_filters('cmchk_admin_page_section', $sections);
-        $selected = empty($_REQUEST['section'])? 'hooks':$_REQUEST['section'];
-        $sec_page = $sections[$selected];
-        call_user_func_array( $sec_page['page'], array() );
-    }),    
-    'project'=>array('text'=>__('Project', 'cmchk'), 'href'=>'?page=cmc-hook&tab=project', 'page'=>function(){
-        $sections = array(
-            'project'=>array('page'=> function(){
-                echo "<div id='cmchk_section_project_editor' class='cmchk_section'>";
-                require("sections/project.php");
-                echo "<div>";
-            }),
-            'projects'=>array('page'=>function(){  
-                cmc_hook::$projects->cmc_admin_view();
-            }),
-        );
-        $sections = apply_filters('cmchk_admin_page_section', $sections);
-        $selected = empty($_REQUEST['section'])? 'projects':$_REQUEST['section'];
-        $sec_page = $sections[$selected];
-        call_user_func_array( $sec_page['page'], array() );
-    }),
-	'explorer'=>array('text'=>__('Explorer', 'cmchk'), 'href'=>'?page=cmc-hook&tab=explorer', 'page'=>function(){
-		$sections = array(
-            'explorer'=>array('page'=> function(){
-                echo "<div id='cmchk_section_explorer' class='cmchk_section'>";
-				require("sections/hook_editor.php");  
-				echo "<div>";
-            }),
-        );
-        $sections = apply_filters('cmchk_admin_page_section', $sections);
-        $selected = empty($_REQUEST['section'])? 'explorer':$_REQUEST['section'];
-        $sec_page = $sections[$selected];
-        call_user_func_array( $sec_page['page'], array() );
-	}),
-    'settings'=>array('text'=>__('Settings', 'cmchk'), 'href'=>'?page=cmc-hook&tab=settings', 'page'=>function(){
-		$sections = array(
-            'settings'=>array('page'=> function(){
-                echo "<div id='cmchk_section_settings' class='cmchk_section'>";
-				require("sections/settings.php");  
-				echo "<div>";
-            }),
-        );
-        $sections = apply_filters('cmchk_admin_page_section', $sections);
-        $selected = empty($_REQUEST['section'])? 'settings':$_REQUEST['section'];
-        $sec_page = $sections[$selected];
-        call_user_func_array( $sec_page['page'], array() );
-        
-    }),
-);
+$menu = array();
+$menu['hook'] = array('text'=>__('Hooks', 'cmchk'), 'href'=>'?page=cmc-hook', 
+	'sections'=> array(
+		'hooks'=>array('page' => function(){ 
+			cmc_hook::$hooks->cmc_admin_view();
+		}),
+	), 'default'=>'hooks');   
+$menu['project'] = array('text'=>__('Project', 'cmchk'), 'href'=>'?page=cmc-hook&tab=project',
+	'sections' => array(
+		'project'=>array('page'=> function(){
+			echo "<div id='cmchk_section_project_editor' class='cmchk_section'>";
+			require("sections/project.php");
+			echo "<div>";
+		}),
+		'projects'=>array('page'=>function(){  
+			cmc_hook::$projects->cmc_admin_view();
+		}),
+	), 'default'=>'projects' );
+$menu['explorer'] = array('text'=>__('Explorer', 'cmchk'), 'href'=>'?page=cmc-hook&tab=explorer',
+	'sections' => array(
+		'explorer'=>array('page'=> function(){
+			echo "<div id='cmchk_section_explorer' class='cmchk_section'>";
+			require("sections/hook_editor.php");  
+			echo "<div>";
+		}),
+	), 'default'=>'explorer' );
+$menu['settings'] = array('text'=>__('Settings', 'cmchk'), 'href'=>'?page=cmc-hook&tab=settings',
+	'sections' => array(
+		'settings'=>array('page'=> function(){
+			echo "<div id='cmchk_section_settings' class='cmchk_section'>";
+			require("sections/settings.php");  
+			echo "<div>";
+		}),
+	), 'default'=>'settings' );
 
 $sel_tab = empty($_REQUEST['tab']) ? 'hook': $_REQUEST['tab'];
 
@@ -82,9 +60,11 @@ $sel_tab = empty($_REQUEST['tab']) ? 'hook': $_REQUEST['tab'];
         <button id="cmchk-project-add-form-btn" class="page-title-action cmchk-help-tip" type="button"  onclick="jQuery('#cmchk-project-add-form').slideToggle('fast').find(':text').focus();">
             <?php echo __('Add Project', 'cmchk');  ?>
         </button>
+		<!--
 		<button class="page-title-action cmchk-help-tip" onclick="jQuery('#cmchk-folder-add-form').slideToggle('fast').find(':text').focus();" >
 			<?php echo __('Add Folder', 'cmchk');  ?>
 		</button>
+		-->
         <button type="button" id="cmchk-form-project-impport-btn" class="page-title-action cmchk-help-tip" data-tip="Import Projects" onclick="jQuery('form#cmchk-form-project-import').slideToggle('fast').find(':file').focus();" >                
             <?php echo __('Import', 'cmchk'); ?>
         </button>  
@@ -94,21 +74,21 @@ $sel_tab = empty($_REQUEST['tab']) ? 'hook': $_REQUEST['tab'];
         </a>  		
     </h1>
     <div style="width:400px;">        
-        <form id="cmchk-hook-add-form" class="cmchk-hook-project-folder-add-form" style="display:none;" action="<?php echo admin_url('admin-ajax.php').'?action=cmchk_hook_editor&tab='.$_REQUEST['tab']; ?>" >
+        <form id="cmchk-hook-add-form" class="cmchk-hook-project-folder-add-form" style="display:none;" action="<?php echo admin_url('admin-ajax.php').'?tab='.$_REQUEST['tab']; ?>" >
             <p>
                 <?php wp_nonce_field( 'cmc-hook-nonce','_wpnonce', true, true ); ?>
                 <input type="text" name="title" class="widefat" style="width:70%" placeholder="<?php echo __("Hook Title", "cmchk"); ?>" />
-                <button type="submit" class="button button-primary" style="width:15%;"><?php echo __('Save', 'cmchk'); ?></button>
+                <button type="submit" class="button button-primary" name="action" value="cmchk_hook_editor" style="width:15%;"><?php echo __('Save', 'cmchk'); ?></button>
             </p>
         </form>
-        <form id="cmchk-project-add-form" class="cmchk-hook-project-folder-add-form" style="display:none;" action="<?php echo admin_url('admin-ajax.php').'?action=cmchk_project_editor&tab='.$_REQUEST['tab']; ?>">
+        <form id="cmchk-project-add-form" class="cmchk-hook-project-folder-add-form" style="display:none;" action="<?php echo admin_url('admin-ajax.php').'?tab='.$_REQUEST['tab']; ?>">
             <p>
                 <?php wp_nonce_field( 'cmc-hook-project-nonce','_wpnonce', true, true ); ?>
                 <input type="text" name="title" class="widefat" style="width:70%" placeholder="<?php echo __("Project Title", "cmchk"); ?>" />
-                <button  type="submit" class="button button-primary" style="width:15%;" ><?php echo __('Save', 'cmchk'); ?></button>
+                <button  type="submit" class="button button-primary" name="action" value="cmchk_project_editor" style="width:15%;" ><?php echo __('Save', 'cmchk'); ?></button>
             </p>
         </form>
-		<form id="cmchk-folder-add-form" class="cmchk-hook-project-folder-add-form" method="post" style="display:none;" action="<?php echo admin_url('admin-ajax.php').'?action=cmchk_hook_editor&tab='.$_REQUEST['tab']; ?>" >
+		<form id="cmchk-folder-add-form" class="cmchk-hook-project-folder-add-form" method="post" style="display:none;" action="<?php echo admin_url('admin-ajax.php').'?tab='.$_REQUEST['tab']; ?>" >
 			<p>
 				<?php wp_nonce_field( 'cmchk-project-folder-add-nonce','_wpnonce', true, true ); ?>
 				<input type="text" name="title" class="widefat" style="width:70%" placeholder="<?php echo __("Folder Name", "cmchk"); ?>" />
@@ -125,22 +105,25 @@ $sel_tab = empty($_REQUEST['tab']) ? 'hook': $_REQUEST['tab'];
             </p>
         </form>
 	</div>          
-    <h2 id="cmchk_tab_menu" class="nav-tab-wrapper wp-clearfix">        
-        <?php             
-            $menu = apply_filters('cmchk_admin_page_menu', $menu);
-            foreach($menu as $k => $m){
-                if( $m['active'] === false) continue;
-                $s = ($sel_tab == $k)? "nav-tab-active":""; $m['class'] = is_array($m['class'])? implode(' ', $m['class']):$m['class'];
-                echo sprintf('<a href="%s" class="nav-tab %s %s" %s > %s </a>', $m['href'], $m['class'], $s, $m['atts'], $m['text'] );
-            }
-        ?> 
-    </h2>
-    <div id="cmchk_tab" class="cmchk_tab_<?php echo $sel_tab; ?>"> 
-        <?php
-            $page = $menu[$sel_tab];
-            call_user_func_array( $page['page'], array() );
-        ?>
-    </div>
+    <div id="cmchk_admin_page_tab">
+		<h2 id="cmchk_admin_page_menu" class="nav-tab-wrapper wp-clearfix">        
+			<?php             
+				$menu = apply_filters('cmchk_admin_page_menu', $menu);
+				foreach( $menu as $k => $m ){
+					if( $m['active'] === false) continue;
+					$s = ($sel_tab == $k)? "nav-tab-active":""; $m['class'] = is_array($m['class'])? implode(' ', $m['class']):$m['class'];
+					echo sprintf('<a href="%s" class="nav-tab %s %s" %s > %s </a>', $m['href'], $m['class'], $s, $m['atts'], $m['text'] );
+				}
+			?> 
+		</h2>
+		<div id="cmchk_admin_page_<?php echo $sel_tab; ?>" class="cmchk_admin_page_body"> 
+			<?php
+				cmchk::menu_render( $sel_tab, $_REQUEST['section'], $menu );
+				//$page = $menu[$sel_tab];
+			   // call_user_func_array( $page['page'], array() );
+			?>
+		</div>
+	</div>
 </div>
 <script>
 	var cmchk = cmchk || {};
@@ -164,6 +147,7 @@ $sel_tab = empty($_REQUEST['tab']) ? 'hook': $_REQUEST['tab'];
 			data.push({name: 'XDEBUG_SESSION_START', value: 'xdebug'});
             if( $form.is('#cmchk-hook-add-form') ) data.push({name: 'project_id', value: $('#cmchk_project_id').val() || 0});
 			if( $form.is('#cmchk-folder-add-form') ) data.push({name: 'project_id', value: $('#cmchk_project_id').val() || 0});
+			if( $btn.prop('name') != '' ) data.push({name: $btn.prop('name'), value: $btn.prop('value') });
             $.post($form.attr('action'), data, function(result){
 				if(result.message) alert(result.message);
                 if( result.url )document.location = result.url;                                                
